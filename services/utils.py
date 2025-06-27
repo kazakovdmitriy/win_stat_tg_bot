@@ -20,4 +20,4 @@ def format_system_stats(disks, cpu, mem, net) -> str:
         text += (
             f"<b>{iface}</b>: отправлено <b>{gb(data['bytes_sent']):.1f} ГБ</b>, получено <b>{gb(data['bytes_recv']):.1f} ГБ</b>\n"
         )
-    return text 
+    return text
