@@ -1,14 +1,23 @@
 def format_system_stats(disks, cpu, mem, net) -> str:
-    text = "<b>Статистика системы:</b>\n"
-    text += "\n<b>Диски:</b>\n"
+    def gb(val):
+        return val / (1024 ** 3)
+
+    text = "<b>📊 Статистика системы</b>\n"
+    text += "\n<b>💾 Диски:</b>\n"
     for d in disks:
-        text += (f"{d['device']} ({d['mountpoint']}, {d['fstype']}): "
-                 f"Свободно {d['free'] // (1024**3)}ГБ из {d['total'] // (1024**3)}ГБ ({d['percent']}%)\n")
-    text += f"\n<b>CPU:</b> {cpu['cpu_percent']}% загрузка, ядер: {cpu['cpu_count']}\n"
+        text += (
+            f"<b>{d['device']}</b> (<i>{d['mountpoint']}, {d['fstype']}</i>):\n"
+            f" ├ Свободно: <b>{gb(d['free']):.1f} ГБ</b> из <b>{gb(d['total']):.1f} ГБ</b> (<i>{d['percent']}%</i>)\n"
+        )
+    text += f"\n<b>🖥 CPU:</b> <b>{cpu['cpu_percent']}%</b> загрузка, ядер: <b>{cpu['cpu_count']}</b>"
     if cpu['cpu_freq']:
-        text += f"Частота: {cpu['cpu_freq']['current']:.0f} MHz\n"
-    text += f"\n<b>Память:</b> {mem['available'] // (1024**2)}МБ свободно из {mem['total'] // (1024**2)}МБ\n"
-    text += "\n<b>Сеть:</b>\n"
+        text += f"\n └ Частота: <b>{cpu['cpu_freq']['current']:.0f} МГц</b>"
+    text += (
+        f"\n\n<b>🧠 Память:</b> <b>{gb(mem['available']):.1f} ГБ</b> свободно из <b>{gb(mem['total']):.1f} ГБ</b>"
+    )
+    text += "\n\n<b>🌐 Сеть:</b>\n"
     for iface, data in net.items():
-        text += (f"{iface}: отправлено {data['bytes_sent'] // (1024**2)}МБ, получено {data['bytes_recv'] // (1024**2)}МБ\n")
+        text += (
+            f"<b>{iface}</b>: отправлено <b>{gb(data['bytes_sent']):.1f} ГБ</b>, получено <b>{gb(data['bytes_recv']):.1f} ГБ</b>\n"
+        )
     return text 
