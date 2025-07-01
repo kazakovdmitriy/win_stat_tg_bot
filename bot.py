@@ -16,7 +16,7 @@ async def main():
     else:
         logger.warning("Некоторые папки для торрентов недоступны")
     
-    bot = Bot(token=config.bot_token, parse_mode="HTML")
+    bot = Bot(token=config.bot_token)
     dp = Dispatcher()
 
     for router in all_routers:
