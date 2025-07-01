@@ -1,6 +1,6 @@
 from aiogram import Router
 from aiogram.types import Message
-from services.keyboards import get_status_keyboard
+from services.keyboards import get_main_keyboard
 from config import config
 
 router = Router()
@@ -13,6 +13,9 @@ async def all_other_handler(message: Message):
     if message.from_user.id not in config.allowed_users:
         return
     await message.answer(
-        "Пожалуйста, используйте кнопку для получения статуса системы:",
-        reply_markup=get_status_keyboard()
+        "🤖 Привет! Используйте команды или кнопки:\n\n"
+        "📊 Для получения статуса системы\n"
+        "🧲 Отправьте .torrent файл для сохранения\n"
+        "💬 Команда /torrent для справки",
+        reply_markup=get_main_keyboard()
     ) 
