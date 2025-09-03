@@ -62,7 +62,7 @@ async def torrent_help_handler(message: Message):
     await message.answer(help_text, parse_mode="HTML", reply_markup=get_main_keyboard())
 
 
-@router.message(Command("search"))
+@router.message(Command("найти"))
 async def torrent_search_handler(message: Message, command: CommandObject, state: FSMContext, torrent_service: TorrentService):
     if message.from_user.id not in config.allowed_users:
         return
@@ -73,7 +73,9 @@ async def torrent_search_handler(message: Message, command: CommandObject, state
         blocks = torrent_service.search_torrent(args)
         
         await state.set_state(TorrentState.viewing)
-        await state.update_data(torrent_blocks=blocks)
+        # await state.update_data(torrent_blocks=blocks)
+        
+        message_ids = []
         
         for i, block in enumerate(blocks):
             
@@ -81,10 +83,67 @@ async def torrent_search_handler(message: Message, command: CommandObject, state
             button = InlineKeyboardButton(text="📥 Скачать", callback_data=f"download_{i}")
             keyboard = InlineKeyboardMarkup(inline_keyboard=[[button]])
 
-            await message.answer(text, parse_mode="HTML", reply_markup=keyboard)
+            send_message = await message.answer(text, parse_mode="HTML", reply_markup=keyboard)
+            
+            message_ids.append(send_message.message_id)
+            
+            await state.update_data(
+                torrent_blocks=blocks,
+                search_message_ids=message_ids,
+                command_message_id=message.message_id
+            )
+            
+        # Добавляем сообщение с кнопкой очистки поиска
+        clear_button = InlineKeyboardButton(text="🗑️ Очистить", callback_data="clear_search")
+        clear_keyboard = InlineKeyboardMarkup(inline_keyboard=[[clear_button]])
+        clear_message = await message.answer(
+            "Вы можете очистить все результаты поиска, если не нашли нужный торрент:",
+            reply_markup=clear_keyboard
+        )
+        message_ids.append(clear_message.message_id)
     else:
         text = "Для поиска введите название фильма после команды. Например: /search Матрица 4"
         await message.answer(text, parse_mode="HTML", reply_markup=get_main_keyboard())
+
+
+@router.callback_query(lambda callback: callback.data == 'clear_search')
+async def clear_search_handler(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    """Обработчик очистки результатов поиска"""
+    if callback.from_user.id not in config.allowed_users:
+        await callback.answer("❌ Доступ запрещен")
+        return
+    
+    user_data = await state.get_data()
+    search_message_ids = user_data.get('search_message_ids', [])
+    command_message_id = user_data.get('command_message_id')
+    
+    # Удаляем все сообщения с результатами поиска
+    deleted_count = 0
+    for msg_id in search_message_ids:
+        try:
+            await bot.delete_message(chat_id=callback.from_user.id, message_id=msg_id)
+            deleted_count += 1
+        except Exception as e:
+            logger.error(f"Ошибка при удалении сообщения {msg_id}: {e}")
+    
+    # Также удаляем оригинальное сообщение с командой /search
+    try:
+        await bot.delete_message(chat_id=callback.from_user.id, message_id=command_message_id)
+        deleted_count += 1
+    except Exception as e:
+        logger.error(f"Ошибка при удалении команды {command_message_id}: {e}")
+    
+    # Отправляем подтверждение об очистке
+    await callback.answer(f"🗑️ Удалено {deleted_count} сообщений", show_alert=False)
+    
+    # Очищаем состояние
+    await state.clear()
+    
+    # Отправляем сообщение о том, что поиск очищен
+    await callback.message.answer(
+        "✅ Результаты поиска очищены. Вы можете начать новый поиск с помощью команды /search",
+        reply_markup=get_main_keyboard()
+    )
 
         
 @router.callback_query(lambda callback: callback.data.startswith('download_'))
@@ -96,13 +155,28 @@ async def torrent_download(callback: CallbackQuery, state: FSMContext, bot: Bot)
     
     user_data = await state.get_data()
     blocks = user_data.get('torrent_blocks', [])
+    search_message_ids = user_data.get('search_message_ids', [])
+    command_message_id = user_data.get('command_message_id')
     index = int(callback.data.split("_")[1])
 
     if index < len(blocks):
         selected_block = blocks[index]
         await callback.answer("📥 Загружаем торрент...", show_alert=False)
-        
+
         try:
+            # Удаляем все сообщения с результатами поиска
+            for msg_id in search_message_ids:
+                try:
+                    await bot.delete_message(chat_id=callback.from_user.id, message_id=msg_id)
+                except Exception as e:
+                    logger.error(f"Ошибка при удалении сообщения {msg_id}: {e}")
+            
+            # Также удаляем оригинальное сообщение с командой /search
+            try:
+                await bot.delete_message(chat_id=callback.from_user.id, message_id=command_message_id)
+            except Exception as e:
+                logger.error(f"Ошибка при удалении команды {command_message_id}: {e}")
+            
             # Скачиваем .torrent файл по ссылке
             async with aiohttp.ClientSession() as session:
                 async with session.get(selected_block["Link"]) as response:
