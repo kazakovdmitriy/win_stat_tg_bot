@@ -1,15 +1,19 @@
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 from aiogram.types import Document
 from config import config
 from services.logger import get_logger
+from services import JackettClient
 
 logger = get_logger(__name__)
 
 
 class TorrentService:
     """Сервис для работы с торрент файлами"""
+    def __init__(self):
+        self.jackett = JackettClient(base_url=config.jackett_url, 
+                                     api_key=config.jackett_token)
     
     @staticmethod
     def get_available_folders() -> dict[str, str]:
@@ -81,4 +85,38 @@ class TorrentService:
             return True
         except Exception as e:
             logger.exception(f"Ошибка при проверке папок торрентов: {e}")
-            return False 
+            return False
+        
+    @staticmethod
+    async def save_torrent_file_from_bytes(file_data: bytes, file_name: str, folder_name: str) -> str:
+        """Сохраняет торрент-файл из байтов в указанную папку"""
+        if folder_name not in config.torrent_folders:
+            logger.error(f"Папка {folder_name} не найдена в конфигурации")
+            return None
+
+        folder_path = config.torrent_folders[folder_name]
+
+        # Проверяем существование папки
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+        # Полный путь к файлу
+        full_path = os.path.join(folder_path, file_name)
+
+        try:
+            # Сохраняем файл
+            with open(full_path, 'wb') as f:
+                f.write(file_data)
+
+            logger.info(f"Торрент файл сохранен: {full_path}")
+            return full_path
+
+        except Exception as e:
+            logger.exception(f"Ошибка при сохранении торрент файла {file_name} в папку {folder_path}")
+            return None
+
+    def search_torrent(self, query: str, limit: int = 10) -> Optional[List[dict]]:
+        return self.jackett.search(query=query, indexer="rutracker", limit=limit)
+    
+    def format_message(self, message: dict) -> str:
+        return self.jackett.format_result(message)
