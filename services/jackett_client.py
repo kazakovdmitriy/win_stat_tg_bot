@@ -102,14 +102,6 @@ class JackettClient:
             f"⬇️ Личи: <code>{leechers}</code>\n"
         )
         
-        # Добавляем ссылку на магнит или детали
-        # if "MagnetUri" in result and result["MagnetUri"]:
-        #     message += f"🧲 <a href='{result['MagnetUri']}'>Магнет-ссылка</a>\n"
-        # if "Link" in result and result["Link"]:
-        #     message += f"<a href='{result['Link']}'>.torrent</a>\n"
-        # elif "Details" in result and result["Details"]:
-        #     message += f"🔗 <a href='{result['Details']}'>Ссылка на детали</a>\n"
-        
         return message
 
     def _format_size(self, size_bytes: int) -> str:
