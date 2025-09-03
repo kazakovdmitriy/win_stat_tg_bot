@@ -11,6 +11,7 @@ class Config:
     jackett_token: str
     jackett_url: str
     allowed_users: list[int]
+    torrent_limit: int
     torrent_folders: dict[str, str]
 
     @staticmethod
@@ -26,6 +27,7 @@ class Config:
             bot_token=os.getenv('BOT_TOKEN', ''),
             jackett_token=os.getenv('JACKETT_TOKEN', ''),
             jackett_url=os.getenv('JACKETT_URL', '127.0.0.1:9117'),
+            torrent_limit=int(os.getenv('TORRENT_LIMIT', '10')),
             allowed_users=[int(uid) for uid in os.getenv('ALLOWED_USERS', '').split(',') if uid.strip().isdigit()],
             torrent_folders=torrent_folders
         )

@@ -70,7 +70,7 @@ async def torrent_search_handler(message: Message, command: CommandObject, state
     args = command.args
     
     if args:
-        blocks = torrent_service.search_torrent(args)
+        blocks = torrent_service.search_torrent(args, limit=config.torrent_limit)
         
         await state.set_state(TorrentState.viewing)
         # await state.update_data(torrent_blocks=blocks)
