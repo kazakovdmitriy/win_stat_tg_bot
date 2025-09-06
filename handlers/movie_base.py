@@ -21,7 +21,7 @@ class MovieStates(StatesGroup):
     confirming_deletion = State()
 
 # Количество фильмов на странице
-MOVIES_PER_PAGE = 5
+MOVIES_PER_PAGE = config.movies_on_list
 
 
 @router.message(Command("movies"))

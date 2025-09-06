@@ -16,6 +16,7 @@ class Config:
     torrent_folders: Dict[str, str]
     movie_extensions: List[str]
     movie_root_folder: str
+    movies_on_list: int
 
     @staticmethod
     def from_env() -> 'Config':
@@ -41,7 +42,8 @@ class Config:
             allowed_users=[int(uid) for uid in os.getenv('ALLOWED_USERS', '').split(',') if uid.strip().isdigit()],
             torrent_folders=torrent_folders,
             movie_extensions=movie_extensions,
-            movie_root_folder=movie_root_folder
+            movie_root_folder=movie_root_folder,
+            movies_on_list=int(os.getenv("MOVIES_ON_LIST", "5"))
         )
 
 
