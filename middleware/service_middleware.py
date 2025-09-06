@@ -1,12 +1,15 @@
 from aiogram import BaseMiddleware
-from typing import Callable, Dict, Any, Awaitable
-from services import TorrentService
+from services import TorrentService, MovieBaseService
 
 
 class ServiceMiddleware(BaseMiddleware):
-    def __init__(self, torrent_service: TorrentService):
+    def __init__(self, 
+                 torrent_service: TorrentService, 
+                 movie_service: MovieBaseService):
         self.torrent_service = torrent_service
+        self.movie_service = movie_service
         
     async def __call__(self, handler, event, data):
         data['torrent_service'] = self.torrent_service
+        data['movie_service'] = self.movie_service
         return await handler(event, data)

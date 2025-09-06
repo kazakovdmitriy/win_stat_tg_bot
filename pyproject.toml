@@ -5,6 +5,7 @@ description = "Telegram-бот для вывода статистики Windows-
 requires-python = ">=3.8"
 dependencies = [
     "aiogram>=3.4.1,<4.0.0",
+    "aiogram-dialog>=2.2.0",
     "psutil",
     "python-dotenv",
     "requests>=2.32.4",
