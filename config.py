@@ -15,6 +15,7 @@ class Config:
     torrent_limit: int
     torrent_folders: Dict[str, str]
     movie_extensions: List[str]
+    movie_root_folder: str
 
     @staticmethod
     def from_env() -> 'Config':
@@ -24,6 +25,8 @@ class Config:
             "📺 Сериалы": r"D:\New\Series", 
             "🎮 Игры": r"D:\New\Game"
         }
+
+        movie_root_folder = "D:\Media\Movie"
 
         movie_extensions = {
             '.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', 
@@ -37,8 +40,8 @@ class Config:
             torrent_limit=int(os.getenv('TORRENT_LIMIT', '10')),
             allowed_users=[int(uid) for uid in os.getenv('ALLOWED_USERS', '').split(',') if uid.strip().isdigit()],
             torrent_folders=torrent_folders,
-            movie_extensions=movie_extensions
-
+            movie_extensions=movie_extensions,
+            movie_root_folder=movie_root_folder
         )
 
 
