@@ -4,6 +4,7 @@ from services.logger import get_logger
 
 logger = get_logger(__name__)
 
+
 class SystemInfoService:
     @staticmethod
     def get_disks_info() -> List[Dict]:

@@ -6,4 +6,4 @@ all_routers = [
     torrent_router,
     stats_router,
     other_router
-] 
+]
