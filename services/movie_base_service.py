@@ -10,7 +10,7 @@ logger = get_logger(__name__)
 
 class MovieBaseService:
     def __init__(self):
-        self.movie_folder = config.torrent_folders['🎬 Фильмы']
+        self.movie_folder = config.movie_root_folder
         self.extensions = config.movie_extensions
 
     def get_all_movies(self) -> List[Tuple[str, str]]:
