@@ -1,4 +1,5 @@
 import os
+from typing import List, Dict
 from dotenv import load_dotenv
 from dataclasses import dataclass
 
@@ -10,9 +11,12 @@ class Config:
     bot_token: str
     jackett_token: str
     jackett_url: str
-    allowed_users: list[int]
+    allowed_users: List[int]
     torrent_limit: int
-    torrent_folders: dict[str, str]
+    torrent_folders: Dict[str, str]
+    movie_extensions: List[str]
+    movie_root_folder: str
+    movies_on_list: int
 
     @staticmethod
     def from_env() -> 'Config':
@@ -22,6 +26,13 @@ class Config:
             "📺 Сериалы": r"D:\New\Series", 
             "🎮 Игры": r"D:\New\Game"
         }
+
+        movie_root_folder = "D:\Media\Movie"
+
+        movie_extensions = {
+            '.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', 
+            '.webm', '.m4v', '.3gp', '.ts', '.mpeg', '.mpg'
+        }
         
         return Config(
             bot_token=os.getenv('BOT_TOKEN', ''),
@@ -29,7 +40,10 @@ class Config:
             jackett_url=os.getenv('JACKETT_URL', '127.0.0.1:9117'),
             torrent_limit=int(os.getenv('TORRENT_LIMIT', '10')),
             allowed_users=[int(uid) for uid in os.getenv('ALLOWED_USERS', '').split(',') if uid.strip().isdigit()],
-            torrent_folders=torrent_folders
+            torrent_folders=torrent_folders,
+            movie_extensions=movie_extensions,
+            movie_root_folder=movie_root_folder,
+            movies_on_list=int(os.getenv("MOVIES_ON_LIST", "5"))
         )
 
 

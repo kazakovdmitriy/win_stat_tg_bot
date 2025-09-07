@@ -1,11 +1,12 @@
 import asyncio
 from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
 from config import config
 from handlers import all_routers
 from services.logger import get_logger
 
 from middleware import ServiceMiddleware
-from services import TorrentService
+from services import TorrentService, MovieBaseService
 
 logger = get_logger(__name__)
 
@@ -14,6 +15,7 @@ async def main():
     logger.info("Запуск бота...")
     
     torrent_service = TorrentService()
+    movie_service = MovieBaseService()
 
     # Проверяем доступность папок для торрентов
     if torrent_service.validate_torrent_folders():
@@ -21,11 +23,17 @@ async def main():
     else:
         logger.warning("Некоторые папки для торрентов недоступны")
 
+    storage = MemoryStorage()
     bot = Bot(token=config.bot_token)
-    dp = Dispatcher()
+    dp = Dispatcher(storage=storage)
     
     # Регистрация мидлвари
-    dp.update.outer_middleware(ServiceMiddleware(torrent_service))
+    dp.update.outer_middleware(
+        ServiceMiddleware(
+            torrent_service,
+            movie_service
+        )
+    )
 
     for router in all_routers:
         dp.include_router(router)
