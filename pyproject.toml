@@ -8,6 +8,7 @@ dependencies = [
     "aiogram-dialog>=2.2.0",
     "psutil",
     "python-dotenv",
+    "qbittorrent-api>=2024.10.68",
     "requests>=2.32.4",
 ]
 

@@ -62,6 +62,16 @@ async def torrent_help_handler(message: Message):
     await message.answer(help_text, parse_mode="HTML", reply_markup=get_main_keyboard())
 
 
+@router.message(Command("torrent_status"))
+async def torrent_status(message: Message, torrent_service: TorrentService):
+    if message.from_user.id not in config.allowed_users:
+        return
+    
+    torrent_status = torrent_service.get_status()
+
+    await message.answer(torrent_status)
+
+
 @router.message(Command("найти"))
 async def torrent_search_handler(message: Message, command: CommandObject, state: FSMContext, torrent_service: TorrentService):
     if message.from_user.id not in config.allowed_users:

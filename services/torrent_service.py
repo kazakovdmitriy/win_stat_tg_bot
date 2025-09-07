@@ -5,6 +5,7 @@ from aiogram.types import Document
 from config import config
 from services.logger import get_logger
 from services import JackettClient
+from qbittorrentapi import Client, LoginFailed
 
 logger = get_logger(__name__)
 
@@ -120,3 +121,24 @@ class TorrentService:
     
     def format_message(self, message: dict) -> str:
         return self.jackett.format_result(message)
+
+    def get_status(self):
+        try:
+            qb = Client(host=config.qbittorrent_host)
+            torrents = qb.torrents_info()
+            downloading = [t for t in torrents if t.state == 'downloading']
+
+            answer = ""
+
+            for i, torrent in enumerate(downloading):
+                answer += f"{i}. {torrent.name}: {torrent.progress * 100:.2f}%\n"
+
+            if answer == "":
+                return "Всё скачано ✅"
+            else:
+                return answer
+            
+        except LoginFailed as e:
+            logger.error(f"Ошибка авторизации: {e}")
+        except Exception as e:
+            logger.error(e)
